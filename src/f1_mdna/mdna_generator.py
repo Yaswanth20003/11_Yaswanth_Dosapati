@@ -3,62 +3,57 @@ from groq import Groq
 
 
 def generate_mdna_template(kpis: dict) -> str:
-    """
-    Deterministic fallback MD&A (no LLM)
-    """
     return f"""
-Management’s Discussion and Analysis (MD&A)
+## Management’s Discussion and Analysis (MD&A)
 
-{kpis['company']} reported stable financial performance during the period.
-Revenue growth stood at {kpis['revenue_growth_pct']}%, while profit growth
-was recorded at {kpis['profit_growth_pct']}%.
+### Performance Overview
+{kpis['company']} reported steady performance during the period.
+Revenue growth stood at {kpis['revenue_growth_yoy_pct']}%, while profit
+growth was {kpis['profit_growth_yoy_pct']}%.
 
-The company maintained an operating margin of {kpis['operating_margin_pct']}%,
-reflecting disciplined cost management and operational efficiency.
+### Profitability & Efficiency
+The operating margin was {kpis['operating_margin_pct']}.
+Return on Assets (ROA) stood at {kpis['roa_pct']}%, and Return on Equity (ROE)
+was {kpis['roe_pct']}%, reflecting overall capital efficiency.
 
-From a financial position perspective, total assets stood at
-₹{kpis['total_assets']} crore, with total debt of ₹{kpis['total_debt']} crore.
-Liquidity remains comfortable, supported by a current ratio of
-{kpis['current_ratio']}.
-
-Overall, the company demonstrates a balanced capital structure and
-stable operating fundamentals.
+### Financial Position & Risk
+The company maintains a current ratio of {kpis['current_ratio']},
+with a debt-to-equity ratio of {kpis['debt_to_equity']}.
 """.strip()
 
 
 def generate_mdna_groq(kpis: dict) -> str:
-    """
-    LLM-powered MD&A generation using Groq
-    Falls back to template if API fails
-    """
     try:
         client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
         prompt = f"""
 You are a financial analyst.
 
-Write a professional Management’s Discussion & Analysis (MD&A)
-based on the following KPIs:
+Write a professional MD&A in markdown with sections:
+- Performance Overview
+- Profitability & Efficiency
+- Financial Position & Risk
 
+KPIs:
 Company: {kpis['company']}
-Revenue Growth (%): {kpis['revenue_growth_pct']}
-Profit Growth (%): {kpis['profit_growth_pct']}
+Revenue Growth YoY (%): {kpis['revenue_growth_yoy_pct']}
+Profit Growth YoY (%): {kpis['profit_growth_yoy_pct']}
 Operating Margin (%): {kpis['operating_margin_pct']}
-Total Assets: {kpis['total_assets']}
-Total Debt: {kpis['total_debt']}
+ROA (%): {kpis['roa_pct']}
+ROE (%): {kpis['roe_pct']}
+Debt-to-Equity: {kpis['debt_to_equity']}
 Current Ratio: {kpis['current_ratio']}
 
-Tone: formal, analytical, investor-focused.
-Length: one concise paragraph.
+Tone: formal, investor-focused.
 """
 
-        completion = client.chat.completions.create(
+        response = client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.4,
         )
 
-        return completion.choices[0].message.content.strip()
+        return response.choices[0].message.content.strip()
 
     except Exception:
         return generate_mdna_template(kpis)

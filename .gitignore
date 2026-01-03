@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# Generated files
+data/sec_filing.txt
+
+# OS files
+.DS_Store
+Thumbs.db
