@@ -3,7 +3,7 @@ __pycache__/
 *.pyc
 
 # Environment variables
-# .env
+.env
 
 # Generated files
 data/sec_filing.txt
